@@ -1,9 +1,46 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 //import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../model/task.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
   static const routeName = '/home-screen';
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  var task_controller;
+
+  void SaveData() async {
+    SharedPreferences data = await SharedPreferences.getInstance();
+    Task task = Task.fromString(task_controller.text);
+
+    String task_name = data.getString('task') ?? "";
+    List<String> task_list = [];
+    task_list =
+        (task_name.isEmpty) ? [] : List<String>.from(json.decode(task_name));
+    print(task_list);
+    task_list.add(json.encode(task.getMap()));
+    data.setString('task', json.encode(task_list));
+    //data.setString('task', json.encode(task.getMap()));
+    task_controller.text = '';
+    //print('Task saved!');
+  }
+
+  @override
+  void initState() {
+    task_controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    task_controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +93,7 @@ class HomeScreen extends StatelessWidget {
                         height: 20.5,
                       ),
                       TextField(
+                        controller: task_controller,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6.0),
@@ -77,14 +115,14 @@ class HomeScreen extends StatelessWidget {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.black,
                               ),
-                              onPressed: () => print('reset pressed'),
+                              onPressed: () => task_controller.text = '',
                             ),
                             ElevatedButton(
                               child: Text('Add'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.black,
                               ),
-                              onPressed: () => print('add pressed'),
+                              onPressed: () => SaveData(),
                             ),
                           ],
                         ),
