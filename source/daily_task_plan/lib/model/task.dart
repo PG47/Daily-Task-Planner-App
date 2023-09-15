@@ -1,26 +1,26 @@
 class Task {
-  String task_name;
+  String task;
   DateTime time;
 
-  Task({required this.task_name, required this.time});
+  Task({required this.task, required this.time});
 
   factory Task.fromString(String name) {
     return Task(
-      task_name: name,
+      task: name,
       time: DateTime.now(),
     );
   }
 
   factory Task.fromMap(Map<String, dynamic> map) {
     return Task(
-      task_name: map['task'],
+      task: map['task'],
       time: DateTime.fromMillisecondsSinceEpoch(map['time']),
     );
   }
 
   Map<String, dynamic> getMap() {
     return {
-      'task': this.task_name,
+      'task': this.task,
       'time': this.time.microsecondsSinceEpoch,
     };
   }

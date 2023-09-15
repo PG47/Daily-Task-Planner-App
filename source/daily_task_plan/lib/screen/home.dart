@@ -14,26 +14,46 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var task_controller;
+  var Tasks;
 
   void SaveData() async {
     SharedPreferences data = await SharedPreferences.getInstance();
     Task task = Task.fromString(task_controller.text);
 
     String task_name = data.getString('task') ?? "";
-    List<String> task_list = [];
-    task_list =
-        (task_name.isEmpty) ? [] : List<String>.from(json.decode(task_name));
-    print(task_list);
-    task_list.add(json.encode(task.getMap()));
-    data.setString('task', json.encode(task_list));
-    //data.setString('task', json.encode(task.getMap()));
+    List<Map<String, dynamic>> task_list = [];
+
+    task_list = List<Map<String, dynamic>>.from(json.decode(task_name));
+
+    final Map<String, dynamic> taskMap = task.getMap();
+    task_list.add(taskMap);
+    final updatedTaskList = json.encode(task_list);
+    data.setString('task', updatedTaskList);
     task_controller.text = '';
-    //print('Task saved!');
+    Navigator.of(context).pop();
+  }
+
+  void getTask() async {
+    Tasks = [];
+    SharedPreferences data = await SharedPreferences.getInstance();
+
+    String task_name = data.getString('task') ?? "";
+    List<Map<String, dynamic>> task_list = [];
+    task_list = List<Map<String, dynamic>>.from(json.decode(task_name));
+
+    for (Map<String, dynamic> d in task_list) {
+      Tasks.add(Task.fromMap(d));
+    }
+
+    print(Tasks);
   }
 
   @override
   void initState() {
+    super.initState();
     task_controller = TextEditingController();
+
+    getTask();
   }
 
   @override
