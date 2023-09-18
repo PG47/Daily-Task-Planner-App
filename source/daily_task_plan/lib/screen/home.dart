@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-//import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/task.dart';
 
@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.of(context).pop();
   }
 
-  void getTask() async {
+  Future<void> getTask() async {
     Tasks = [];
     SharedPreferences data = await SharedPreferences.getInstance();
 
@@ -44,13 +44,14 @@ class _HomeScreenState extends State<HomeScreen> {
     for (Map<String, dynamic> d in task_list) {
       Tasks.add(Task.fromMap(d));
     }
-
-    print(Tasks);
+    print(Tasks.runtimeType);
+    print("Number of tasks: ${Tasks.length}");
   }
 
   @override
   void initState() {
     super.initState();
+    print('done');
     task_controller = TextEditingController();
 
     getTask();
@@ -68,11 +69,57 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(
           'Task Manager',
-          //style: GoogleFonts.montserrat(),
+          style: GoogleFonts.montserrat(),
         ),
       ),
-      body: Center(
-        child: Text('No tasks added yet!'),
+      body: FutureBuilder<void>(
+        future: getTask(), // Assuming getTask() returns a Future<void>
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+                child:
+                    CircularProgressIndicator()); // Display a loading indicator while fetching data.
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error fetching tasks'));
+          } else if (Tasks == null || Tasks.isEmpty) {
+            return Center(child: Text('No tasks added yet!'));
+          } else {
+            return SingleChildScrollView(
+                child: Column(
+              children: (Tasks as List<dynamic>)
+                  .map((e) => Container(
+                        height: 70.0,
+                        width: MediaQuery.of(context).size.width,
+                        margin: EdgeInsets.symmetric(
+                            horizontal: 10.0, vertical: 5.0),
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 10.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5.0),
+                          border: Border.all(
+                            color: Colors.black,
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              e.task,
+                              style: GoogleFonts.montserrat(),
+                            ),
+                            Checkbox(
+                              value: false,
+                              key: GlobalKey(),
+                              onChanged: (bool? value) {},
+                            ),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            ));
+          }
+        },
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(
